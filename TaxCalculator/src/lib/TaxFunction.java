@@ -13,32 +13,32 @@ public class TaxFunction {
 	 * Jika pegawai sudah memiliki anak maka penghasilan tidak kena pajaknya ditambah sebesar Rp 4.500.000 per anak sampai anak ketiga.
 	 * 
 	 */
-	
-	
 	public static int calculateTax(int monthlySalary, int otherMonthlyIncome, int numberOfMonthWorking, int deductible, boolean isMarried, int numberOfChildren) {
-		
-		int tax = 0;
-		
-		if (numberOfMonthWorking > 12) {
-			System.err.println("More than 12 month working per year");
-		}
-		
-		if (numberOfChildren > 3) {
-			numberOfChildren = 3;
-		}
-		
-		if (isMarried) {
-			tax = (int) Math.round(0.05 * (((monthlySalary + otherMonthlyIncome) * numberOfMonthWorking) - deductible - (54000000 + 4500000 + (numberOfChildren * 1500000))));
-		}else {
-			tax = (int) Math.round(0.05 * (((monthlySalary + otherMonthlyIncome) * numberOfMonthWorking) - deductible - 54000000));
-		}
-		
-		if (tax < 0) {
-			return 0;
-		}else {
-			return tax;
-		}
-			 
-	}
+        if (numberOfMonthWorking > 12) {
+            throw new IllegalArgumentException("Invalid number of months working per year");
+        }
+
+        int taxDeductible = calculateTaxDeductible(isMarried, numberOfChildren);
+
+        int taxableIncome = ((monthlySalary + otherMonthlyIncome) * numberOfMonthWorking) - deductible - taxDeductible;
+
+        int tax = (int) Math.round(0.05 * taxableIncome);
+
+        return Math.max(tax, 0); // Menghindari pajak bernilai dibawah 0
+    }
+
+	private static int calculateTaxDeductible(boolean isMarried, int numberOfChildren) {
+        int taxDeductible = 54000000; // Pajak untuk yang belum menikah
+        if (isMarried) {
+            taxDeductible += 4500000; // Pajak untuk yang sudah menikah
+        }
+        taxDeductible += calculateChildDeductible(numberOfChildren);
+        return taxDeductible;
+    }
+
+	private static int calculateChildDeductible(int numberOfChildren) {
+        int maxChildrenDeductible = 3 * 1500000; // Jumlah maksimum pajak untuk keluarga beranak 3
+        return Math.min(numberOfChildren * 1500000, maxChildrenDeductible);
+    }
 	
 }
